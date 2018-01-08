@@ -1,0 +1,27 @@
+- name: install php-gd dependencies
+  yum: name={{ item }} state=present enablerepo=epel
+  with_items:
+    - libwebp
+- name: install php-mcrypt dependencies
+  yum: name={{ item }} state=present enablerepo=epel
+  with_items:
+    - libmcrypt
+- name: install php55 packages
+  yum: name={{ item }} state=present enablerepo=remi-php55
+  with_items:
+    - php
+    - php-devel
+    - php-mysql
+    - php-mb*
+    - php-mcrypt
+    - php-gd
+    - php-opcache
+    - php-fpm
+    - php-pecl-xdebug
+    - php-xml
+    - php-dom
+    - php-json
+    - php-intl
+    - php-bcmath
+    - php-openssl
+    - php-pdo

@@ -1,0 +1,91 @@
+# Configure root
+- name: Copy git-completion for root
+  copy: src="git-completion.bash" dest="/root/.git-completion.bash" owner=root group=root mode=0700 backup=yes
+
+- name: Add bash prompt with git-completion for root
+  lineinfile: >-
+    dest=/root/.bash_profile
+    state=present
+    line='source $HOME/.git-completion.bash'
+
+- name: Copy git-prompt for root
+  copy: src="git-prompt.sh" dest="/root/.git-prompt.sh" owner=root group=root mode=0700 backup=yes
+
+- name: Add bash prompt with git-prompt for root
+  lineinfile: >-
+    dest=/root/.bash_profile
+    state=present
+    line='source $HOME/.git-prompt.sh'
+
+- name: Add bash prompt with git for root
+  blockinfile:
+    dest: /root/.bash_profile
+    block: |
+      # プロンプトに各種情報を表示
+      GIT_PS1_SHOWDIRTYSTATE=1
+      GIT_PS1_SHOWUPSTREAM=1
+      GIT_PS1_SHOWUNTRACKEDFILES=
+      GIT_PS1_SHOWSTASHSTATE=1
+      ############### ターミナルのコマンド受付状態の表示変更
+      # \u ユーザ名
+      # \h ホスト名
+      # \W カレントディレクトリ
+      # \w カレントディレクトリのパス
+      # \n 改行
+      # \d 日付
+      # \[ 表示させない文字列の開始
+      # \] 表示させない文字列の終了
+      # \$ $
+      export PS1='\[\033[1;32m\]\u\[\033[00m\]:\[\033[1;34m\]\w\[\033[1;31m\]$(__git_ps1)\[\033[00m\] \$ '
+
+# Configure user
+- name: Copy git-completion for users
+  copy: src="git-completion.bash" dest="/home/{{item.name}}/.git-completion.bash" owner={{item.name}} group={{item.groups}} mode=0644 backup=yes
+  with_items:
+    "{{ users }}"
+  when: users > 0
+
+- name: Add bash prompt with git-completion for users
+  lineinfile: >-
+    dest=/home/{{item.name}}/.bash_profile
+    state=present
+    line='source $HOME/.git-completion.bash'
+  with_items: "{{users}}"
+  when: users > 0
+
+- name: Copy git-prompt for users
+  copy: src="git-prompt.sh" dest="/home/{{item.name}}/.git-prompt.sh" owner={{item.name}} group={{item.groups}} mode=0644 backup=yes
+  with_items:
+    "{{ users }}"
+  when: users > 0
+
+- name: Add bash prompt with git-prompt for users
+  lineinfile: >-
+    dest=/home/{{item.name}}/.bash_profile
+    state=present
+    line='source $HOME/.git-prompt.sh'
+  with_items: "{{users}}"
+  when: users > 0
+
+- name: Add bash prompt with git for user
+  blockinfile:
+    dest: /home/{{item.name}}/.bash_profile
+    block: |
+      # プロンプトに各種情報を表示
+      GIT_PS1_SHOWDIRTYSTATE=1
+      GIT_PS1_SHOWUPSTREAM=1
+      GIT_PS1_SHOWUNTRACKEDFILES=
+      GIT_PS1_SHOWSTASHSTATE=1
+      ############### ターミナルのコマンド受付状態の表示変更
+      # \u ユーザ名
+      # \h ホスト名
+      # \W カレントディレクトリ
+      # \w カレントディレクトリのパス
+      # \n 改行
+      # \d 日付
+      # \[ 表示させない文字列の開始
+      # \] 表示させない文字列の終了
+      # \$ $
+      export PS1='\[\033[1;32m\]\u\[\033[00m\]:\[\033[1;34m\]\w\[\033[1;31m\]$(__git_ps1)\[\033[00m\] \$ '
+  with_items: "{{users}}"
+  when: users > 0

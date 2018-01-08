@@ -1,0 +1,82 @@
+- name: yum update
+  yum:
+    name: '*'
+    state: latest
+    update_cache: yes
+
+- name: install repo
+  yum: name={{item}}
+  with_items:
+    - https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    - http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+
+# 明示的に指定したいのでenabledは全て0にする
+- name: default enabled repo
+  replace: dest=/etc/yum.repos.d/{{item}} regexp="enabled *= *1" replace="enabled=0"
+  with_items:
+    - epel.repo
+    - remi.repo
+
+- name: Set timezone to Asia/Tokyo
+  timezone:
+    name: Asia/Tokyo
+
+- name: install libselinux-python
+  yum: name=libselinux-python
+
+- name: selinux disabled
+  selinux: state=disabled
+
+- name: iptables disabled
+  service: name=iptables state=stopped enabled=no
+
+- name: sudo extend PATH
+  replace:
+    dest=/etc/sudoers
+    regexp='^Defaults\s*secure_path'
+    replace='Defaults    env_keep +=  "PATH"\n# Defaults    secure_path'
+
+# Configure user
+- name: Copy ~/.vimrc
+  copy: src=".vimrc" dest="/home/{{item.name}}/.vimrc" owner={{item.name}} group={{item.groups}} mode=0644 backup=yes
+  with_items: "{{users}}"
+  when: users > 0
+
+- name: Allow user to sudo without password
+  lineinfile: >-
+    dest='/etc/sudoers'
+    state=present
+    line='{{item.name}}     ALL=(ALL:ALL) NOPASSWD:ALL'
+  with_items: "{{users}}"
+  when: users > 0
+
+# http://hakunin.com/six-ansible-practices
+- name: ensure github.com is a known host for users
+  lineinfile:
+    dest: "~/.ssh/known_hosts"
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+    regexp: "^github\\.com"
+
+# Configure user root
+- name: "Copy ~/.vimrc for root"
+  copy: src=".vimrc" dest="/root/.vimrc" owner="root" group="root" mode=0644 backup=yes
+
+- name: "Add rm alias"
+  lineinfile: >-
+    dest="/root/.bashrc"
+    state=present
+    line="alias rm='rm -i'"
+- name: "Create .ssh directory"
+  file: path=/root/.ssh state=directory owner=root group=root mode=0700
+
+# http://hakunin.com/six-ansible-practices
+- name: ensure github.com is a known host for root
+  lineinfile:
+    dest: "/root/.ssh/known_hosts"
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+    regexp: "^github\\.com"
+

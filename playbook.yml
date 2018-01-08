@@ -1,0 +1,13 @@
+- hosts: localhost
+  become: true
+  vars_files:
+    - group_vars/common.yml
+  roles:
+    - common
+    - develop
+    - mysql
+    - git/client
+    - git/prompt
+    - python
+    - gcloud
+    - php55

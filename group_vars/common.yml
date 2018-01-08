@@ -1,0 +1,14 @@
+users:
+  - name: vagrant
+    groups: vagrant
+
+tmp: /tmp
+
+mysql_root_passwd: root
+
+PY_VERSION: 2.7.6
+
+google_cloud_sdk_version: 180.0.0
+google_cloud_sdk_platform: linux-x86_64
+google_cloud_sdk_sha256sum: 5a5c2e1bedcf6aaabf31cf70b2636c99c1f022c68f14702b832129f686bbdd8b
+google_cloud_sdk_path: /usr/local/google-cloud-sdk

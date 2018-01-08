@@ -1,0 +1,44 @@
+- name: install libselinux-python
+  yum: name=libselinux-python
+
+- name: selinux desabled
+  selinux: state=disabled
+
+- name: yum remove mariadb-libs
+  yum: name=mariadb-libs state=absent
+
+- name: get mysql repo
+  get_url: url=http://dev.mysql.com/get/mysql57-community-release-el6-7.noarch.rpm dest={{ tmp }}/mysql57-community-release-el6-7.noarch.rpm
+
+- name: yum install mysql repo
+  yum: name={{ tmp }}/mysql57-community-release-el6-7.noarch.rpm
+
+- name: yum install mysql-community-server
+  yum: name=mysql-community-server
+
+- name: yum install MySQL-python
+  yum: name=MySQL-python
+
+- name: check .my.cnf exists
+  stat:
+    path: /etc/my.cnf
+  register: mycnf_file
+
+- name: create my.cnf
+  template: src="my.cnf" dest="/etc/my.cnf"
+
+- name: service start mysql
+  service: name=mysqld enabled=yes state=started
+
+- name: first root password
+  shell: cat /var/log/mysqld.log | grep password | awk '{ print $NF }' | head -n 1
+  register: mysql_passwd
+
+- name: check mysql root password
+  command: mysqlshow -uroot -p'{{ mysql_passwd.stdout }}'
+  register: root_check
+  ignore_errors: True
+
+- name: set mysql root password
+  command: mysql --connect-expired-password -uroot -p'{{ mysql_passwd.stdout }}' -e "set password for root@'localhost' = PASSWORD('{{ mysql_root_passwd }}')"
+  when: root_check.stderr.find('denied') == -1

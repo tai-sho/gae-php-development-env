@@ -1,0 +1,47 @@
+- name: download google sdk
+  get_url:
+    url: https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-{{ google_cloud_sdk_version }}-{{ google_cloud_sdk_platform }}.tar.gz
+    dest: "{{ tmp }}/google-cloud-sdk-{{ google_cloud_sdk_version }}-{{ google_cloud_sdk_platform }}.tar.gz"
+    checksum: sha256:{{ google_cloud_sdk_sha256sum }}
+
+- name: check gcloud
+  stat: path={{ google_cloud_sdk_path }}
+  register: gcloud_dir
+
+- name: extract google sdk
+  unarchive:
+    src: "{{ tmp }}/google-cloud-sdk-{{ google_cloud_sdk_version }}-{{ google_cloud_sdk_platform }}.tar.gz"
+    dest: /usr/local
+    copy: no
+  when: not gcloud_dir.stat.exists
+
+- name: PATH and enable command-completion for users
+  shell: "{{ google_cloud_sdk_path }}/install.sh -q --rc-path /home/{{ item.name }}/.bashrc --command-completion true"
+
+  with_items: "{{ users }}"
+
+- name: PATH and enable command-completion for root
+  shell: "{{ google_cloud_sdk_path }}/install.sh -q --rc-path /root/.bashrc --command-completion true"
+
+- name: gcloud update
+  shell: gcloud components update -q
+
+- name: gae php extension install
+  shell: gcloud components install app-engine-php -q
+
+- name: Copy ipaddr.py
+  copy: src="ipaddr.py" dest="{{ google_cloud_sdk_path }}/platform/google_appengine/ipaddr.py"
+
+- name: Add alias runserver for root
+  lineinfile: >-
+    dest=/root/.bash_profile
+    state=present
+    line="alias runserver='{{ google_cloud_sdk_path }}/bin/dev_appserver.py --php_executable_path=/usr/bin/php-cgi --host=0.0.0.0 --enable_host_checking=0 app.yaml'"
+
+- name: Add alias runserver for users
+  lineinfile: >-
+    dest=/home/{{item.name}}/.bash_profile
+    state=present
+    line="alias runserver='{{ google_cloud_sdk_path }}/bin/dev_appserver.py --php_executable_path=/usr/bin/php-cgi --host=0.0.0.0 --enable_host_checking=0 app.yaml'"
+  with_items: "{{users}}"
+  when: users > 0

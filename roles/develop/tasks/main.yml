@@ -1,0 +1,7 @@
+- name: system required dependencies
+  yum: name={{ item }} state=present
+  with_items:
+    - unzip
+    - zip
+    - vim
+  sudo: yes
