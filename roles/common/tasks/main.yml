@@ -4,19 +4,6 @@
     state: latest
     update_cache: yes
 
-- name: install repo
-  yum: name={{item}}
-  with_items:
-    - https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    - http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
-
-# 明示的に指定したいのでenabledは全て0にする
-- name: default enabled repo
-  replace: dest=/etc/yum.repos.d/{{item}} regexp="enabled *= *1" replace="enabled=0"
-  with_items:
-    - epel.repo
-    - remi.repo
-
 - name: Set timezone to Asia/Tokyo
   timezone:
     name: Asia/Tokyo
@@ -35,6 +22,19 @@
     dest=/etc/sudoers
     regexp='^Defaults\s*secure_path'
     replace='Defaults    env_keep +=  "PATH"\n# Defaults    secure_path'
+
+- name: install repo
+  yum: name={{item}}
+  with_items:
+    - https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    - http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+
+# 明示的に指定したいのでenabledは全て0にする
+- name: default enabled repo
+  replace: dest=/etc/yum.repos.d/{{item}} regexp="enabled *= *1" replace="enabled=0"
+  with_items:
+    - epel.repo
+    - remi.repo
 
 # Configure user
 - name: Copy ~/.vimrc

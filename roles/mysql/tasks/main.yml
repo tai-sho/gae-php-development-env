@@ -19,13 +19,18 @@
 - name: yum install MySQL-python
   yum: name=MySQL-python
 
-- name: check .my.cnf exists
-  stat:
-    path: /etc/my.cnf
-  register: mycnf_file
-
 - name: create my.cnf
   template: src="my.cnf" dest="/etc/my.cnf"
+
+  #- name: check if mysql log file size is 0 or not
+  #  stat: path={{ mysql_log_path }}
+  #  register: log_file
+  #  changed_when: false
+  #
+  #- name: initialize insecure mysql
+  #  shell: mysqld --initialize-insecure --user=mysql
+  #  changed_when: false
+  #  when: log_file.stat.size == 0
 
 - name: service start mysql
   service: name=mysqld enabled=yes state=started

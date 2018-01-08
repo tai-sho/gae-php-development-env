@@ -13,13 +13,9 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
-  config.vm.define "ansible1" do |server|
-    server.vm.hostname = "ansible1"
+  config.vm.define "gaephp.dev" do |server|
+    server.vm.hostname = "gaephp.dev"
     server.vm.network :private_network, ip: "192.168.33.35"
-
-    # VirtualBoxのGUI上の名前を設定する
     server.vm.provider "virtualbox" do |vb|
       vb.name = config.vm.box.gsub(/\//, "_") + "_" + server.vm.hostname
       vb.memory = 4096
@@ -36,6 +32,8 @@ Vagrant.configure("2") do |config|
 
     server.vm.provision "ansible_local" do |ansible|
       ansible.playbook = "playbook.yml"
+      ansible.inventory_path = "hosts"
+      ansible.limit = "all"
     end
 
   end

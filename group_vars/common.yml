@@ -5,6 +5,7 @@ users:
 tmp: /tmp
 
 mysql_root_passwd: root
+mysql_log_path: /var/log/mysqld.log
 
 PY_VERSION: 2.7.6
 

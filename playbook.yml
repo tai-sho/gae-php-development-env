@@ -1,5 +1,7 @@
-- hosts: localhost
+- hosts: developments
   become: true
+  connection: local
+  user: vagrant
   vars_files:
     - group_vars/common.yml
   roles:
